@@ -2,7 +2,7 @@ NAME    := webserver
 SRC     := main.c arguments.c server.c request.c
 HEADERS := headers.h
 
-CFLAGS      := -Wall -Werror -Wpedantic -g3
+CFLAGS      := -Wall -Werror -Wpedantic -g
 OBJ         := $(SRC:.c=.o)
 LINUX_LINKS := -lbsd -pthread
 
