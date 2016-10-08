@@ -8,8 +8,8 @@ int main(int argc, char** argv)
 {
 	setprogname(argv[0]);
 	
-	parse_arguments(argc, argv);
-	init_server();
+	arguments_parse(argc, argv);
+	server_init();
 	
 	return EXIT_SUCCESS;
 }

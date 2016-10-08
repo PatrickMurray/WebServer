@@ -1,14 +1,15 @@
 #include "headers.h"
 
 
-void* handle_request(void* fd_ptr)
+void* request_handler(void* fd_ptr)
 {
 	int    client_fd;
 	char*  buffer;
-	char*  line;
-	int    loop;
-	char*  response;
+	//struct http_header;
 	int    line_num;
+	int    header_complete;
+	char*  line;
+	char*  response;
 	char** tokens;
 	size_t tokens_size;
 	size_t idx;
@@ -24,30 +25,32 @@ void* handle_request(void* fd_ptr)
 		exit(EXIT_FAILURE);
 	}
 	
-	loop     = 1;
-	line_num = 0;
-	while (loop)
+	//memset(http_header, 0, sizeof(http_header));
+	
+	line_num        = 0;
+	header_complete = 0;
+
+	while (header_complete)
 	{
 		line = request_getline(client_fd, buffer, HEADER_BUFFER_LENGTH);
 
 		if (strlen(line) == 0)
 		{
-			loop = 0;
+			free(line);
+			header_complete = 1;
+			break;
 		}
 
-		if (line_num == 0)
+		tokens_size = 0;
+		tokens      = tokenize(line, " ", &tokens_size);
+		
+		if (tokens != NULL)
 		{
-			printf("%s\n", line);
-			tokens_size = 0;
-			tokens = tokenize(line, " ", &tokens_size);
-			if (tokens != NULL)
+			for (idx = 0; idx < tokens_size; idx++)
 			{
-				for (idx = 0; idx < tokens_size; idx++)
-				{
-					printf("%s\n", tokens[idx]);
-				}
-				free_tokens(tokens, tokens_size);
+				printf("%s\n", tokens[idx]);
 			}
+			free_tokens(tokens, tokens_size);
 		}
 		
 		free(line);
@@ -186,83 +189,4 @@ char* request_getline(int client_fd, char* buffer, size_t buffer_length)
 	}
 	
 	return line;
-}
-
-
-char** tokenize(char* string, char* delimiter, size_t* size)
-{
-	char** tokens;
-	char*  str;
-	char*  saveptr;
-	char*  token;
-
-	*size = 0;
-	
-	if (strlen(string) == 0)
-	{
-		return NULL;
-	}
-	
-	if ((tokens = calloc(1, sizeof(char*))) == NULL)
-	{
-		fprintf(stderr,
-			"%s: unable to allocate memory\n",
-			getprogname()
-		);
-		exit(EXIT_FAILURE);
-	}
-
-	if ((str = strdup(string)) == NULL)
-	{
-		fprintf(stderr,
-			"%s: unable to duplicate string: %s\n",
-			getprogname(),
-			strerror(errno)
-		);
-		exit(EXIT_FAILURE);
-	}
-	
-	saveptr = NULL;
-	token   = strtok_r(str, delimiter, &saveptr);
-
-	while (token != NULL) {
-		tokens[*size] = strdup(token); // INVALID WRITE OF SIZE 8
-		(*size)++;
-
-		if ((tokens = realloc(tokens, sizeof(char*) * ((*size) + 1))) == NULL) /* ADDRESS ?????? IS 6 BYTES AFTER A BLOCK OF SIZE */
-		{
-			fprintf(stderr,
-				"%s: unable to reallocate memory\n",
-				getprogname()
-			);
-			exit(EXIT_FAILURE);
-		}
-		
-		token = strtok_r(NULL, delimiter, &saveptr);
-	}
-	
-	/* REALLOCATE DOWN 1 */
-	if ((tokens = realloc(tokens, sizeof(char*) * (*size))) == NULL)
-	{
-		fprintf(stderr,
-			"%s: unable to reallocate memory\n",
-			getprogname()
-		);
-		exit(EXIT_FAILURE);
-	}
-
-	free(str);
-
-	return tokens;
-}
-
-void free_tokens(char** tokens, size_t size)
-{
-	size_t idx;
-
-	for (idx = 0; idx < size; idx++)
-	{
-		free(tokens[idx]);
-	}
-	free(tokens);
 }

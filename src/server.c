@@ -5,7 +5,7 @@ extern int SERVER_PORT;
 extern int VERBOSE_MODE;
 
 
-void init_server()
+void server_init()
 {
 	int                     server_fd;
 	struct sockaddr_in6     server_addr;
@@ -129,7 +129,7 @@ void init_server()
 			printf(":: Recieved connection\n");
 		}
 		
-		if ((errcode = pthread_create(&thread_id, NULL, handle_request, (void*) (intptr_t) client_fd)) != 0)
+		if ((errcode = pthread_create(&thread_id, NULL, request_handler, (void*) (intptr_t) client_fd)) != 0)
 		{
 			fprintf(stderr,
 				"%s: unable to create thread: %s\n",

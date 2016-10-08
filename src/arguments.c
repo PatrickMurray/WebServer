@@ -5,7 +5,7 @@ extern int SERVER_PORT;
 extern int VERBOSE_MODE;
 
 
-void parse_arguments(int argc, char** argv)
+void arguments_parse(int argc, char** argv)
 {
 	int      flag;
 	char*    optstring;
@@ -33,7 +33,7 @@ void parse_arguments(int argc, char** argv)
 	while ((flag = getopt_long(argc, argv, optstring, long_options, &long_index)) != -1) {
 		switch (flag) {
 			case 'h':
-				usage(stdout);
+				arguments_usage(stdout);
 				exit(EXIT_SUCCESS);
 				break;
 			case 'v':
@@ -87,7 +87,7 @@ void parse_arguments(int argc, char** argv)
 				/* TODO */
 				break;
 			default:
-				usage(stderr);
+				arguments_usage(stderr);
 				exit(EXIT_FAILURE);
 				break;
 		}
@@ -96,7 +96,7 @@ void parse_arguments(int argc, char** argv)
 }
 
 
-void usage(FILE* stream)
+void arguments_usage(FILE* stream)
 {
 	fprintf(stream, "Usage: %s [OPTION]...\n", getprogname());
 	fprintf(stream, "A simple HTTP/1.1 web server.\n");

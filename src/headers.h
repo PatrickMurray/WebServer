@@ -17,6 +17,7 @@
 #include <pthread.h>
 #include <getopt.h>
 #include <limits.h>
+#include <strings.h>
 
 
 #ifndef DEFAULT_SERVER_PORT
@@ -54,17 +55,25 @@ int VERBOSE_MODE;
 int main(int, char**);
 
 /* arguments.c */
-void parse_arguments(int, char**);
-void usage(FILE*);
+void arguments_parse(int, char**);
+void arguments_usage(FILE*);
 
 
 /* server.c */
-void  init_server();
+void  server_init();
 void  server_signal_handler(int);
 char* getsockaddr(int);
 
 /* request.c */
-void*  handle_request(void*);
+void*  request_handler(void*);
 char*  request_getline(int, char*, size_t);
+
+/* token.c */
 char** tokenize(char*, char*, size_t*);
 void   free_tokens(char**, size_t);
+
+/* http.c */
+int http_valid_method(char*);
+int http_valid_version_protocol(char*);
+int http_valid_version_major(char*);
+int http_valid_version_minor(char*);

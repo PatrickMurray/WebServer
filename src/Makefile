@@ -1,5 +1,5 @@
 NAME    := webserver
-SRC     := main.c arguments.c server.c request.c
+SRC     := main.c arguments.c server.c request.c token.c http.c
 HEADERS := headers.h
 
 CFLAGS      := -Wall -Werror -Wpedantic -g
