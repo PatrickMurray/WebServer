@@ -75,7 +75,7 @@ void arguments_parse(int argc, char** argv)
 				SERVER_PORT = (int) ret;
 				break;
 			case 'r':
-				//root = 1;
+				/* root = 1; */
 				break;
 			case 'l':
 				/* TODO */
@@ -84,8 +84,11 @@ void arguments_parse(int argc, char** argv)
 				/* TODO */
 				break;
 			case '?':
-				/* TODO */
-				break;
+				fprintf(stderr,
+					"%s: unknown option '-%c'\n",
+					getprogname(),
+					optopt
+				);
 			default:
 				arguments_usage(stderr);
 				exit(EXIT_FAILURE);
@@ -100,5 +103,17 @@ void arguments_usage(FILE* stream)
 {
 	fprintf(stream, "Usage: %s [OPTION]...\n", getprogname());
 	fprintf(stream, "A simple HTTP/1.1 web server.\n");
+	fprintf(stream, "\n");
+	fprintf(stream, "  -h, --help            displays this help message and exits\n");
+	fprintf(stream, "  -v, --verbose         enables verbose output\n");
+	fprintf(stream, "  -p, --port=NUM        binds the server to the provided port number within the\n");
+	fprintf(stream, "                        allowable range (%i, %i)\n", SERVER_PORT_MIN, SERVER_PORT_MAX);
+	fprintf(stream, "  -r, --root=DIRECTORY  specifys the server's root directory, by default if no\n");
+	fprintf(stream, "                        root directory is provided, the current working\n");
+	fprintf(stream, "                        directory will be used\n");
+	fprintf(stream, "  -l, --log=FILE        appends access log information to the provided log file\n");
+	fprintf(stream, "\n");
+	fprintf(stream, "BSD 3-Clause License (Revised)\n");
+	fprintf(stream, "Copyright (c) 2016 Patrick Murray, All rights reserved.\n");
 	return;
 }

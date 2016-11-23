@@ -3,16 +3,16 @@
 
 void* request_handler(void* fd_ptr)
 {
-	int    client_fd;
-	char*  buffer;
-	//struct http_header;
-	int    line_num;
-	int    header_complete;
-	char*  line;
-	char*  response;
-	char** tokens;
-	size_t tokens_size;
-	size_t idx;
+	int                  client_fd;
+	char*                buffer;
+	struct http_request  http_request;
+	struct http_response http_response;
+	int                  line_num;
+	int                  header_complete;
+	char*                line;
+	char*                response;
+	char**               tokens;
+	size_t               token_length;
 
 	client_fd = (intptr_t) fd_ptr;
 	
@@ -25,12 +25,15 @@ void* request_handler(void* fd_ptr)
 		exit(EXIT_FAILURE);
 	}
 	
-	//memset(http_header, 0, sizeof(http_header));
-	
+	/* keep-alive loop here */
+
+	memset(&http_request,  0, sizeof(struct http_request));
+	memset(&http_response, 0, sizeof(struct http_response));
+
 	line_num        = 0;
 	header_complete = 0;
 
-	while (header_complete)
+	while (!header_complete)
 	{
 		line = request_getline(client_fd, buffer, HEADER_BUFFER_LENGTH);
 
@@ -41,24 +44,42 @@ void* request_handler(void* fd_ptr)
 			break;
 		}
 
-		tokens_size = 0;
-		tokens      = tokenize(line, " ", &tokens_size);
+		token_length = 0;
+		tokens       = tokenize(line, " ", &token_length);
 		
 		if (tokens != NULL)
 		{
-			for (idx = 0; idx < tokens_size; idx++)
+			switch (line_num)
 			{
-				printf("%s\n", tokens[idx]);
+				case 0:
+					http_digest_initial_line(
+						http_request,
+						tokens,
+						token_length
+					);
+				default:
+					http_digest_header_line(
+						http_request,
+						tokens,
+						token_length
+					);
 			}
-			free_tokens(tokens, tokens_size);
+			free_tokens(tokens, token_length);
 		}
-		
+		else
+		{
+			/* determine what to do here */
+			printf("Some weird error occured...\n");
+		}
+
 		free(line);
 		line_num++;
 	}
 	
 	free(buffer);
 	
+	http_generate_response(&http_request, &http_response);
+
 	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 44\r\n\r\nHello World, I am a simple response message!";
 
 	if (send(client_fd, response, strlen(response), 0) == -1)
@@ -71,6 +92,8 @@ void* request_handler(void* fd_ptr)
 		exit(EXIT_FAILURE);
 	}
 	
+	/* end keep-alive loop here */
+
 	if (close(client_fd) == -1)
 	{
 		fprintf(stderr,
@@ -153,7 +176,6 @@ char* request_getline(int client_fd, char* buffer, size_t buffer_length)
 		
 		line[line_terminator_idx] = '\0';
 
-		/**/
 		if ((line = realloc(line, sizeof(char) * (line_terminator_idx + 1))) == NULL)
 		{
 			fprintf(stderr,

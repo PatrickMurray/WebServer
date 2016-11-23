@@ -1,7 +1,26 @@
 #include "headers.h"
 
 
-int http_valid_method(char* method)
+void http_digest_initial_line(
+	struct http_request request,
+	char**              tokens,
+	size_t              token_length
+)
+{
+	return;
+}
+
+void http_digest_header_line(
+	struct http_request request,
+	char**              tokens,
+        size_t              token_length
+)
+{
+	return;
+}
+
+
+int http_valid_request_method(struct http_request request, char* method)
 {
 	int valid;
 
@@ -23,7 +42,10 @@ int http_valid_method(char* method)
 }
 
 
-int http_valid_version_protocol(char* protocol)
+int http_valid_request_protocol_version(
+	struct http_request request,
+	char*               protocol
+)
 {
 	int valid;
 
@@ -38,23 +60,64 @@ int http_valid_version_protocol(char* protocol)
 }
 
 
-int http_valid_version_major(char* major)
+int http_valid_request_protocol_version_major(
+	struct http_request request,
+	char*               major
+)
 {
-	int valid;
-	int major;
-	
+	int      valid;
+	long int major_val;
+	char*    remainder;
+
 	valid = 0;
+	
+	major_val = strtol(major, &remainder, 10);
+
+	if (strlen(remainder) != 0)
+	{
+		return -1;
+	}
+
+	if (major_val == LONG_MIN || major_val == LONG_MAX)
+	{
+		return -1;
+	}
 
 	return valid;
 }
 
 
-int http_valid_version_minor(char* minor)
+int http_valid_request_protocol_version_minor(
+	struct http_request request,
+        char*               minor
+)
 {
-	int valid;
-	int minor;
+	int      valid;
+	long int minor_val;
+	char*    remainder;
 
 	valid = 0;
 
+	minor_val = strtol(minor, &remainder, 10);
+	
+	if (strlen(remainder) != 0)
+	{
+		return -1;
+	}
+
+	if (minor_val == LONG_MIN || minor_val == LONG_MIN)
+	{
+		return -1;
+	}
+
 	return valid;
+}
+
+
+void http_generate_response(
+	struct http_request*  http_request,
+	struct http_response* http_response
+)
+{
+	return;
 }
