@@ -5,7 +5,8 @@ extern int SERVER_PORT;
 extern int VERBOSE_MODE;
 
 
-void server_init()
+void
+server_init()
 {
 	int                     server_fd;
 	struct sockaddr_in6     server_addr;
@@ -172,7 +173,8 @@ void server_init()
 
 
 
-void server_signal_handler(int signum)
+void
+server_signal_handler(int signum)
 {
 	pthread_exit(NULL);
 	exit(signum);

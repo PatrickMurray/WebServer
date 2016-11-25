@@ -4,7 +4,8 @@
 extern int SERVER_PORT;
 
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
 	setprogname(argv[0]);
 	

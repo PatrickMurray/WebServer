@@ -5,7 +5,8 @@ extern int SERVER_PORT;
 extern int VERBOSE_MODE;
 
 
-void arguments_parse(int argc, char** argv)
+void
+arguments_parse(int argc, char** argv)
 {
 	int      flag;
 	char*    optstring;
@@ -99,7 +100,8 @@ void arguments_parse(int argc, char** argv)
 }
 
 
-void arguments_usage(FILE* stream)
+void
+arguments_usage(FILE* stream)
 {
 	fprintf(stream, "Usage: %s [OPTION]...\n", getprogname());
 	fprintf(stream, "A simple HTTP/1.1 web server.\n");

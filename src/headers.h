@@ -2,18 +2,14 @@
 #define _HEADER_H_
 
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#ifndef __NetBSD__
-#include <bsd/stdlib.h>
-#endif
-
 #include <sys/types.h>
 #include <sys/socket.h>
+
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
@@ -22,6 +18,10 @@
 #include <getopt.h>
 #include <limits.h>
 #include <strings.h>
+
+#ifndef __NetBSD__
+#include <bsd/stdlib.h>
+#endif
 
 
 /* When set to 1, verbose output CAN NOT be disabled at run-time */
@@ -68,9 +68,23 @@ int VERBOSE_MODE;
 
 struct http_request
 {
-	char* protocol;
-	int   version_major;
-	int   version_minor;
+	char*               method;
+	char*               resource;
+	
+	char*               protocol;
+	int                 version_major;
+	int                 version_minor;
+
+	struct http_header* headers;
+	size_t              headers_length;
+};
+
+
+struct http_header
+{
+	char*  entity;
+	char** values;
+	size_t values_length;
 };
 
 
@@ -105,13 +119,16 @@ void   free_tokens(char**, size_t);
 
 
 /* http.c */
-void http_digest_initial_line(struct http_request, char**, size_t);
-void http_digest_header_line(struct http_request, char**, size_t);
+void http_init_request(struct http_request*);
+void http_free_request(struct http_request*);
 
-int  http_valid_request_method(struct http_request, char*);
-int  http_valid_request_protocol_version(struct http_request, char*);
-int  http_valid_request_protocol_version_major(struct http_request, char*);
-int  http_valid_request_protocol_version_minor(struct http_request, char*);
+int  http_digest_initial_line(struct http_request*, char**, size_t);
+int  http_digest_header_line(struct http_request*, char**, size_t);
+
+int  http_valid_request_method(struct http_request*, char*);
+int  http_valid_request_protocol_version(struct http_request*, char*);
+int  http_valid_request_protocol_version_major(struct http_request*, char*);
+int  http_valid_request_protocol_version_minor(struct http_request*, char*);
 
 void http_generate_response(struct http_request*, struct http_response*);
 

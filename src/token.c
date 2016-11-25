@@ -1,7 +1,8 @@
 #include "headers.h"
 
 
-char** tokenize(char* string, char* delimiter, size_t* size)
+char**
+tokenize(char* string, char* delimiter, size_t* size)
 {
 	char** tokens;
 	char*  str;
@@ -69,7 +70,8 @@ char** tokenize(char* string, char* delimiter, size_t* size)
 }
 
 
-void free_tokens(char** tokens, size_t size)
+void
+free_tokens(char** tokens, size_t size)
 {
 	size_t idx;
 

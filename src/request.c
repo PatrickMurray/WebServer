@@ -1,7 +1,8 @@
 #include "headers.h"
 
 
-void* request_handler(void* fd_ptr)
+void*
+request_handler(void* fd_ptr)
 {
 	int                  client_fd;
 	char*                buffer;
@@ -28,7 +29,7 @@ void* request_handler(void* fd_ptr)
 	/* keep-alive loop here */
 
 	memset(&http_request,  0, sizeof(struct http_request));
-	memset(&http_response, 0, sizeof(struct http_response));
+	http_init_request(&http_request);
 
 	line_num        = 0;
 	header_complete = 0;
@@ -49,20 +50,19 @@ void* request_handler(void* fd_ptr)
 		
 		if (tokens != NULL)
 		{
-			switch (line_num)
+			if (line_num == 0)
 			{
-				case 0:
-					http_digest_initial_line(
-						http_request,
-						tokens,
-						token_length
-					);
-				default:
-					http_digest_header_line(
-						http_request,
-						tokens,
-						token_length
-					);
+				if (http_digest_initial_line(&http_request, tokens, token_length) != 0)
+				{
+					header_complete = 1;
+				}
+			}
+			else
+			{
+				if (http_digest_header_line(&http_request, tokens, token_length) != 0)
+				{
+					header_complete = 1;
+				}
 			}
 			free_tokens(tokens, token_length);
 		}
@@ -78,7 +78,10 @@ void* request_handler(void* fd_ptr)
 	
 	free(buffer);
 	
+	memset(&http_response, 0, sizeof(struct http_response));
 	http_generate_response(&http_request, &http_response);
+	
+	http_free_request(&http_request);
 
 	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 44\r\n\r\nHello World, I am a simple response message!";
 
@@ -108,7 +111,8 @@ void* request_handler(void* fd_ptr)
 }
 
 
-char* request_getline(int client_fd, char* buffer, size_t buffer_length)
+char*
+request_getline(int client_fd, char* buffer, size_t buffer_length)
 {
 	char*   line;
 	size_t  line_terminator_idx;
