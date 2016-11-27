@@ -120,17 +120,21 @@ void   free_tokens(char**, size_t);
 
 /* http.c */
 void http_init_request(struct http_request*);
+void http_init_response(struct http_response*);
 void http_free_request(struct http_request*);
+void http_free_response(struct http_response*);
 
-int  http_digest_initial_line(struct http_request*, char**, size_t);
-int  http_digest_header_line(struct http_request*, char**, size_t);
+int http_digest_initial_line(struct http_request*, struct http_response*,
+                             char**, size_t);
+int http_digest_header_line(struct http_request*, struct http_response*,
+                            char**, size_t);
 
-int  http_valid_request_method(struct http_request*, char*);
-int  http_valid_request_protocol_version(struct http_request*, char*);
-int  http_valid_request_protocol_version_major(struct http_request*, char*);
-int  http_valid_request_protocol_version_minor(struct http_request*, char*);
+int http_valid_request_method(struct http_request*, char*);
+int http_valid_request_protocol_version(struct http_request*, char*);
+int http_valid_request_protocol_version_major(struct http_request*, char*);
+int http_valid_request_protocol_version_minor(struct http_request*, char*);
 
 void http_generate_response(struct http_request*, struct http_response*);
-
+void http_send_response(struct http_response*, int);
 
 #endif

@@ -10,6 +10,7 @@ request_handler(void* fd_ptr)
 	struct http_response http_response;
 	int                  line_num;
 	int                  header_complete;
+	int                  request_error;
 	char*                line;
 	char*                response;
 	char**               tokens;
@@ -29,12 +30,16 @@ request_handler(void* fd_ptr)
 	/* keep-alive loop here */
 
 	memset(&http_request,  0, sizeof(struct http_request));
+	memset(&http_response, 0, sizeof(struct http_response));
+
 	http_init_request(&http_request);
+	http_init_response(&http_response);
 
 	line_num        = 0;
 	header_complete = 0;
+	request_error   = 0;
 
-	while (!header_complete)
+	while (header_complete != 1 && request_error != 1)
 	{
 		line = request_getline(client_fd, buffer, HEADER_BUFFER_LENGTH);
 
@@ -47,30 +52,25 @@ request_handler(void* fd_ptr)
 
 		token_length = 0;
 		tokens       = tokenize(line, " ", &token_length);
-		
-		if (tokens != NULL)
+		/* tokens == NULL iff stelen(line) == 0 */
+
+
+		if (line_num == 0)
 		{
-			if (line_num == 0)
+			if (http_digest_initial_line(&http_request, &http_response, tokens, token_length) != 0)
 			{
-				if (http_digest_initial_line(&http_request, tokens, token_length) != 0)
-				{
-					header_complete = 1;
-				}
+				header_complete = 1;
 			}
-			else
-			{
-				if (http_digest_header_line(&http_request, tokens, token_length) != 0)
-				{
-					header_complete = 1;
-				}
-			}
-			free_tokens(tokens, token_length);
 		}
 		else
 		{
-			/* determine what to do here */
-			printf("Some weird error occured...\n");
+			if (http_digest_header_line(&http_request, &http_response, tokens, token_length) != 0)
+			{
+				header_complete = 1;
+			}
 		}
+		free_tokens(tokens, token_length);
+		
 
 		free(line);
 		line_num++;
@@ -78,8 +78,10 @@ request_handler(void* fd_ptr)
 	
 	free(buffer);
 	
-	memset(&http_response, 0, sizeof(struct http_response));
-	http_generate_response(&http_request, &http_response);
+	if (request_error != 1)
+	{
+		http_generate_response(&http_request, &http_response);
+	}
 	
 	http_free_request(&http_request);
 

@@ -14,6 +14,14 @@ http_init_request(struct http_request* request)
 
 
 void
+http_init_response(struct http_response* response)
+{
+	response->status_code = -1;
+	return;
+}
+
+
+void
 http_free_request(struct http_request* request)
 {
 	free(request->method);
@@ -23,8 +31,16 @@ http_free_request(struct http_request* request)
 }
 
 
+void
+http_free_response(struct http_response* response)
+{
+	return;
+}
+
+
 int
-http_digest_initial_line(struct http_request* request, char** tokens,
+http_digest_initial_line(struct http_request* request,
+                         struct http_response* response, char** tokens,
                          size_t token_length)
 {
 	int    status;
@@ -34,35 +50,29 @@ http_digest_initial_line(struct http_request* request, char** tokens,
 	char** protocol_version_tokens;
 	size_t protocol_version_tokens_length;
 	long   ret;
-
+	
 	status = 0;
-
+	
 	for (idx = 0; idx < token_length; idx++)
 	{
 		if (idx == 0)
 		{
 			if ((request->method = strdup(tokens[idx])) == NULL)
 			{
-				fprintf(stderr,
-					"%s: unable to allocate memory: %s\n",
-					getprogname(),
-					strerror(errno)
-				);
+				/* Unable to allocate memory */
+				status = -1;
+
 				/* 500 Internal Server Error */
-				exit(EXIT_FAILURE);
 			}
 		}
 		else if (idx == 1)
 		{
 			if ((request->resource = strdup(tokens[idx])) == NULL)
 			{
-				fprintf(stderr,
-					"%s: unable to allocate memory: %s\n",
-					getprogname(),
-					strerror(errno)
-				);
+				/* Unable to allocate memory */
+				status = -1;
+				
 				/* 500 Internal Server Error */
-				exit(EXIT_FAILURE);
 			}
 		}
 		else if (idx == 2)
@@ -75,11 +85,14 @@ http_digest_initial_line(struct http_request* request, char** tokens,
 
 			if (protocol_tokens_length != 2)
 			{
+				status = -1;
 				/* 400 Bad Request */
 			}
 
 			if ((request->protocol = strdup(tokens[idx])) == NULL)
 			{
+				/* Unable to allocate memory */
+				status = -1;
 				/* 500 Internal Server Error */
 			}
 
@@ -90,13 +103,18 @@ http_digest_initial_line(struct http_request* request, char** tokens,
 			
 			if (protocol_version_tokens_length != 2)
 			{
+				status = -1;
 				/* 400 Bad Request */
 			}
 
 			printf("%s\n", protocol_version_tokens[0]);
 			ret = 0;
+			
 			if (ret == 0)
-			{}
+			{
+				/* Major 0.X not supported */
+				/* TODO */
+			}
 
 			free_tokens(protocol_version_tokens,
 				protocol_version_tokens_length
@@ -105,21 +123,26 @@ http_digest_initial_line(struct http_request* request, char** tokens,
 		}
 		else
 		{
+			/* If there're more than 3 tokens */
+			status = -1;
 			/* 400 Bad Request */
 		}
 	}
-
+	
 	return status;
 }
 
+
 int
-http_digest_header_line(struct http_request* request, char** tokens,
+http_digest_header_line(struct http_request* request,
+                        struct http_response* response, char** tokens,
                         size_t token_length)
 {
 	int status;
-	/* Header Support Not Implemented */
-	
+
 	status = 0;
+
+	/* Header Support Not Implemented */
 	
 	return status;
 }
